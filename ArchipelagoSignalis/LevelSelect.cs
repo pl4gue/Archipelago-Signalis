@@ -35,6 +35,12 @@ namespace ArchipelagoSignalis
 
         public static void EnteredNewLevel(string sceneName)
         {
+            // Don't do logic if forcing a scene to load for grabbing objects
+            if (string.IsNullOrEmpty(sceneName) || !SaveManagement._gameLoaded)
+            {
+                return;
+            }
+
             var appendedSceneName = sceneName.Substring(0, 3);
             MelonLogger.Msg($"Appended scene name: {appendedSceneName}");
             currentScene = appendedSceneName;

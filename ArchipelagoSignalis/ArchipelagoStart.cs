@@ -20,6 +20,7 @@ using Harmony;
 using RwActions;
 using TMPro;
 using static UnityEngine.GUI;
+using Object = UnityEngine.Object;
 
 namespace ArchipelagoSignalis
 {
@@ -28,6 +29,9 @@ namespace ArchipelagoSignalis
         private static List<LocationMapping> locationMappings;
         private static List<ItemMapping> itemMappings;
         public static GameObject settingsMenuGameObject = null;
+
+        public static bool _isStorageBoxCached = false;
+        public static GameObject _cachedStorageBox;
 
         public override void OnInitializeMelon()
         {
@@ -187,6 +191,56 @@ namespace ArchipelagoSignalis
 
             SendLocation.SendPhotoOfAlinaLocation(sceneName);
             UpdateVersionName(sceneName);
+
+            LoadStorageBoxInCache(sceneName);
+            LoadStorageBoxIntoLov(sceneName);
+        }
+
+        private static void LoadStorageBoxIntoLov(string sceneName)
+        {
+            if (sceneName == "LOV_Reeducation" && _isStorageBoxCached)
+            {
+                var storageBox = Object.Instantiate(_cachedStorageBox);
+                var saveRoom = GameObject.Find("StaffRoom (Save Room)")
+                    .transform.FindChild("Chunk");
+
+                storageBox.transform.SetParent(saveRoom.transform);
+                storageBox.transform.position = new Vector3((float)-1065.364, (float)-5.9736, 0);
+                MelonLogger.Msg("Loaded StorageBox into save room");
+            }
+        }
+
+        private static void LoadStorageBoxInCache(string sceneName)
+        {
+            if (!_isStorageBoxCached)
+            {
+                SceneManager.LoadScene("DET_Detention", LoadSceneMode.Additive);
+                MelonLogger.Msg("Loaded DET_Detention Scene from LoadStorageBoxInCache");
+            }
+
+            if (sceneName == "DET_Detention" && !_isStorageBoxCached)
+            {
+                var originalGameObject = GameObject.Find("FirstAid")
+                    .transform.FindChild("Chunk")
+                    .transform.FindChild("StorageBox");
+
+                if (null != originalGameObject)
+                {
+                    _cachedStorageBox = Object.Instantiate(originalGameObject.gameObject);
+                    _isStorageBoxCached = true;
+
+                    Object.DontDestroyOnLoad(_cachedStorageBox);
+
+                    MelonLogger.Msg($"GameObject found :: {_cachedStorageBox.name}");
+                    MelonLogger.Msg("Cached Storage Box, unloading DET_Detention");
+                    SceneManager.UnloadScene("DET_Detention");
+                    SceneManager.LoadScene("MainMenu");
+                }
+                else
+                {
+                    MelonLogger.Error("Could not find StorageBox in DET_Detention");
+                }
+            }
         }
 
         public override void OnSceneWasInitialized(int buildIndex, string sceneName)

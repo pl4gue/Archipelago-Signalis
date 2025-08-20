@@ -14,6 +14,7 @@ namespace ArchipelagoSignalis
         public static string LocationsChecked = "";
         public static string ItemsReceived = "";
         public static string DoorsUnlocked = "";
+        public static bool _gameLoaded = false;
 
         public static void UpdateLocationsChecked(string itemName)
         {
@@ -94,6 +95,7 @@ namespace ArchipelagoSignalis
         private static void Postfix()
         {
             MelonLogger.Msg("Loading save");
+            SaveManagement._gameLoaded = true;
 
             SaveManagement.LocationsChecked = SProgress.GetString("LocationsChecked", "");
             SaveManagement.ItemsReceived = SProgress.GetString("ItemsReceived", "");
